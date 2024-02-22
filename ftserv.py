@@ -8,7 +8,7 @@ from cryptography.hazmat.primitives import hashes as hashes, padding as symmetri
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 
-TCP_PORT = 12345
+TCP_PORT = 60000
 AES_KEY_SIZE = 32
 IV_SIZE = 16
 

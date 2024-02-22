@@ -37,13 +37,14 @@ def rsa_decrypt(cipher_text, private_key):
 
 def main():
     if len(sys.argv) != 3:
-        print("Incorrect usage: pyton client.py <server_hostname> <file_save_path>")
+        print("Incorrect usage")
+        print("Correct usage: pyton client.py <server_hostname> <file_save_path>")
         return
 
     server_hostname = sys.argv[1]
     file_save_path = sys.argv[2]
 
-    TCP_PORT = 12345
+    TCP_PORT = 60000
 
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect((server_hostname, TCP_PORT))
