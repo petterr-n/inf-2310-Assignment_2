@@ -22,19 +22,6 @@ def rsa_encrypt(message, public_key):
     )
     return cipher_text
 
-def rsa_decrypt(cipher_text, private_key):
-    plain_text = private_key.decrypt(
-        cipher_text, 
-        asymmetric_padding.OAEP(
-            mgf=asymmetric_padding.MGF1(algorithm=hashes.SHA256()),
-            algorithm=hashes.SHA256(),
-            label=None
-        )
-    )
-    return plain_text
-
-
-
 def main():
     if len(sys.argv) != 3:
         print("Incorrect usage")
@@ -46,24 +33,28 @@ def main():
 
     TCP_PORT = 60000
 
+    # Setup client socket and connect to server socket
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect((server_hostname, TCP_PORT))
 
+    # Receive and deserialize public key
     server_public_key_bytes = client_socket.recv(4096)
     server_public_key = serialization.load_pem_public_key(
         server_public_key_bytes,
         backend=default_backend()
     )
 
+    # Generate AES key, encrypt it with public key and send to server
     aes_key = generate_aes_key()
-
     encrypted_aes_key = rsa_encrypt(aes_key, server_public_key)
     client_socket.sendall(encrypted_aes_key)
 
+    # Receive cipher text and initialization vector, remove IV from cipher text
     iv_and_cipher_text = client_socket.recv(4096)
     iv = iv_and_cipher_text[:16]
     cipher_text = iv_and_cipher_text[16:]
     
+    # Decrypt cipher text into plain text with IV and AES key
     cipher = Cipher(algorithms.AES(aes_key), modes.CBC(iv), backend=default_backend())
     decryptor = cipher.decryptor()
     decrypted_file_data = decryptor.update(cipher_text) + decryptor.finalize()
@@ -71,6 +62,7 @@ def main():
     unpadder = symmetric_padding.PKCS7(128).unpadder()
     decrypted_file_data = unpadder.update(decrypted_file_data) + unpadder.finalize()
 
+    # Write plain text to the specified file
     with open(file_save_path, 'wb') as file:
         file.write(decrypted_file_data)
     
